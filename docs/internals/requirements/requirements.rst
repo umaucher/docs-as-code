@@ -141,7 +141,13 @@ This section provides an overview of current process requirements and their clar
   :parent_covered: NO: Can not cover 'ISO/IEC/IEEE/29148'
   :version: 1
   :implemented: YES
-  :satisfies: gd_req__req_attr_description, gd_req__req_check_mandatory, gd_req__sec_argument
+  :satisfies:
+    gd_req__req_attr_description,
+    gd_req__req_check_mandatory,
+    gd_req__sec_argument,
+    gd_req__impl_diagram_description,
+    gd_req__impl_unit_description,
+    gd_req__impl_interface_description,
 
   Enforce that each need of type :need:`tool_req__docs_req_types` has a description (content)
 
@@ -304,12 +310,12 @@ Versioning
 .. tool_req:: Mandatory attributes of Generic Documents
   :id: tool_req__docs_doc_generic_mandatory
   :tags: Documents
-  :implemented: PARTIAL
-  :version: 2
+  :implemented: YES
+  :version: 3
   :satisfies:
-   gd_req__doc_attributes_manual,
-   gd_req__change_attr_impact_safety,
-   gd_req__doc_attr_status,
+   gd_req__doc_attributes_manual[version==1],
+   gd_req__change_attr_impact_safety[version==1],
+   gd_req__doc_attr_status[version==1],
   :parent_covered: YES
 
   Enforce that each Generic Document ``doc__*`` has the following attributes:
@@ -493,10 +499,13 @@ Versioning
 .. tool_req:: Enforce validity attribute correctness
   :id: tool_req__docs_req_attr_validity_correctness
   :tags: Requirements
-  :implemented: PARTIAL
-  :version: 1
+  :implemented: YES
+  :version: 2
   :parent_covered: YES
-  :satisfies: gd_req__req_validity
+  :satisfies:
+    gd_req__req_validity[version==1],
+    gd_req__req_attr_valid_from[version==1],
+    gd_req__req_attr_valid_until[version==1],
   :status: valid
 
   Docs-as-Code shall enforce that the ``valid_from`` and ``valid_until`` attributes of stakeholder and feature requirements are correct.
@@ -507,10 +516,10 @@ Versioning
 .. tool_req:: Enforce validity start is before end
   :id: tool_req__docs_req_attr_validity_consistency
   :tags: Requirements
-  :implemented: PARTIAL
-  :version: 1
+  :implemented: YES
+  :version: 2
   :parent_covered: YES
-  :satisfies: gd_req__req_validity
+  :satisfies: gd_req__req_validity[version==1]
   :status: valid
 
   Docs-as-Code shall enforce that ``valid_from`` is before ``valid_until`` attribute in stakeholder and feature requirements.
@@ -760,6 +769,47 @@ Architecture Attributes
     but are still defined as architectural elements, which means they have the properties of
     architectural elements.
 
+.. tool_req:: Architecture diagram links
+  :id: tool_req__docs_arch_links
+  :implemented: PARTIAL
+  :version: 1
+  :satisfies: gd_req__impl_diagram_check_id, gd_req__impl_diagram_linkage_id
+  :parent_covered: YES
+
+  Architectural diagrams (``mod_view_sta``, ``feat_arc_sta``, ``comp_arc_sta``,
+  ``mod_view_dyn``, ``feat_arc_dyn``, ``comp_arc_dyn``)
+  shall provide the following links:
+
+  .. csv-table::
+     :header: "Link Type", "Link Target"
+
+     "belongs_to", "corresponding architecture element same level"
+     "includes", "corresponding architecture element lower level"
+
+The following requirement may be overlapping with other tool requirements,
+but for ease of traceability this is a separate one.
+
+.. tool_req:: Correlations of the architectural building blocks
+  :id: tool_req__arch_linkage_safety
+  :implemented: PARTIAL
+  :version: 1
+  :satisfies: gd_req__arch_linkage_safety[version==1]
+  :parent_covered: YES
+
+  .. csv-table::
+     :header: "Link source", "Relation", "Link Target", "Mandatory", "Implemented"
+
+     feat, consists_of, comp, yes, no
+     feat, includes, logic_arc_int, yes, only optional
+     mod, includes, comp, yes, yes
+     real_arc_int_op, included_by, real_arc_int, yes, yes
+     logic_arc_int, includes, logic_arc_int_op, no, yes
+     real_arc_int_op, implements, logic_arc_int_op, no, yes
+     comp, implements, logic_arc_int, no, yes
+     comp, uses, logic_arc_int, no, yes
+     comp, consists_of, comp, no, yes
+
+
 💻 Detailed Design & Code
 ##########################
 
@@ -848,9 +898,9 @@ Testing
 
    Docs-as-Code shall ensure that test cases link to requirements on the correct level:
 
-    - If Partially/FullyVerifies are set in Feature Integration Test these shall link to Feature Requirements
-    - If Partially/FullyVerifies are set in Component Integration Test these shall link to Component Requirements
-    - If Partially/FullyVerifies are set in Unit Test these shall link to Component Requirements
+   - If Partially/FullyVerifies are set in Feature Integration Test these shall link to Feature Requirements
+   - If Partially/FullyVerifies are set in Component Integration Test these shall link to Component Requirements
+   - If Partially/FullyVerifies are set in Unit Test these shall link to Component Requirements
 
 
 .. tool_req:: Provide Metrics for linked requirements
@@ -996,15 +1046,40 @@ Testing
 
   * Workflow (wf)
 
+
+.. tool_req:: Workproduct Types
+  :id: tool_req__docs_wp_types
+  :tags: Process / Other
+  :implemented: YES
+  :version: 1
+  :satisfies: gd_req__process_management_build_blocks_attr, gd_req__process_management_build_blocks_link
+
+  Docs-as-Code shall support the following workproduct types:
+
+  * Workproduct (wp)
+
 .. tool_req:: Standard Requirement Types
   :id: tool_req__docs_stdreq_types
   :tags: Process / Other
   :version: 1
   :implemented: YES
+  :satisfies: gd_req__process_management_build_blocks_attr, gd_req__process_management_build_blocks_link
 
   Docs-as-Code shall support the following requirement types:
 
   * Standard requirement (std_req)
+
+
+.. tool_req:: Standard Workproduct Types
+  :id: tool_req__docs_stdwp_types
+  :tags: Process / Other
+  :version: 1
+  :implemented: YES
+  :satisfies: gd_req__process_management_build_blocks_attr, gd_req__process_management_build_blocks_link
+
+  Docs-as-Code shall support the following requirement types:
+
+  * Standard Workproduct (std_wp)
 
 
 🛡️ Safety Analysis (DFA + FMEA)
@@ -1021,7 +1096,7 @@ Testing
     gd_req__saf_attr_uid,
   :parent_covered: YES
 
-   Docs-As-Code shall support the following need types:
+  Docs-As-Code shall support the following need types:
 
   * Feature FMEA (Failure Modes and Effect Analysis) -> ``feat_saf_fmea``
   * Component FMEA (Failure Modes and Effect Analysis) -> ``comp_saf_fmea``
@@ -1115,10 +1190,10 @@ Testing
 
 .. tool_req:: Safety Analysis Mandatory Content
    :id: tool_req__docs_saf_attrs_content
-   :implemented: NO
+   :implemented: YES
    :tags: Safety Analysis
-   :version: 1
-   :satisfies: gd_req__saf_argument
+   :version: 2
+   :satisfies: gd_req__saf_argument[version==1]
    :parent_covered: NO
 
    Docs-As-Code shall enforce needs of type :need:`tool_req__docs_saf_types` to have a
@@ -1128,42 +1203,42 @@ Testing
 
 .. tool_req:: Safety Analysis Linkage Violates
   :id: tool_req__docs_saf_attrs_violates
-  :implemented: NO
+  :implemented: YES
   :tags: Safety Analysis
-  :version: 1
+  :version: 2
   :satisfies:
-    gd_req__saf_linkage_check,
-    gd_req__saf_linkage,
-    gd_req__sec_linkage_check,
+    gd_req__saf_linkage_check[version==1],
+    gd_req__saf_linkage[version==1],
+    gd_req__sec_linkage_check[version==1],
+    gd_req__sec_linkage[version==1],
   :parent_covered: YES
 
   Docs-As-Code shall enforce that needs of type :need:`tool_req__docs_saf_types` have a
   `violates` links to at least one dynamic / static diagram according to the table.
 
-
   .. table::
      :widths: auto
 
-     =============  ===================
+     =============  ==========================
      Link Source    Allowed Link Target
-     =============  ===================
+     =============  ==========================
      feat_saf_dfa   feat_arc_sta
      comp_saf_dfa   comp_arc_sta
-     feat_saf_fmea  feat_arc_dyn
-     comp_saf_fmea  comp_arc_dyn
-     =============  ===================
+     feat_saf_fmea  feat_arc_dyn, feat_arc_sta
+     comp_saf_fmea  comp_arc_dyn, comp_arc_sta
+     =============  ==========================
 
 
 
 .. tool_req:: FMEA: fault id attribute
    :id: tool_req__docs_saf_attr_fmea_fault_id
-   :implemented: NO
+   :implemented: YES
    :tags: Safety Analysis
-   :version: 1
-   :satisfies: gd_req__saf_attr_fault_id
+   :version: 2
+   :satisfies: gd_req__saf_attr_fault_id[version==1]
    :parent_covered: NO
 
-   Docs-As-Code shall enforce that needs of type DFA (see
+   Docs-As-Code shall enforce that needs of type FMEA (see
    :need:`tool_req__docs_saf_types`) have a `fault_id` attribute.
 
    Allowed values are listed as ID in tables at :need:`gd_guidl__dfa_failure_initiators`.
@@ -1171,16 +1246,16 @@ Testing
 
 .. tool_req:: DFA: failure id attribute
    :id: tool_req__docs_saf_attr_dfa_failure_id
-   :implemented: NO
+   :implemented: YES
    :tags: Safety Analysis
-   :version: 1
-   :satisfies: gd_req__saf_attr_failure_id
+   :version: 2
+   :satisfies: gd_req__saf_attr_failure_id[version==1]
    :parent_covered: NO
 
    Docs-As-Code shall enforce that needs of type DFA (see
-   :need:`tool_req__docs_saf_types`) have a `fault_id` attribute.
+   :need:`tool_req__docs_saf_types`) have a `failure_id` attribute.
 
-   Allowed values are listed as ID in tables at :need:`gd_guidl__dfa_failure_initiators`.
+   Note: Allowed values are listed as ID in tables at :need:`gd_guidl__dfa_failure_initiators`. This is not verified.
 
 
 .. tool_req:: Failure Effect
